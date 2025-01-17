@@ -14,6 +14,10 @@ const  registerSchema=new mongoose.Schema({
     password:{
         type:String,
         required:true
+    },
+    otpCode:{
+        type:String,
+        required:true
     }
 })
 
