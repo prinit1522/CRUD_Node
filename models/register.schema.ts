@@ -3,8 +3,6 @@ const  registerSchema=new mongoose.Schema({
     name:{
         type:String,
         required:true,
-        minlength:3,
-        maxlength:50,
     },
     email:{
         type:String,
@@ -16,6 +14,10 @@ const  registerSchema=new mongoose.Schema({
         required:true
     },
     otpCode:{
+        type:String,
+        required:true
+    },
+    token:{
         type:String,
         required:true
     }

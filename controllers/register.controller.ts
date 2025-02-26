@@ -5,6 +5,9 @@ import  bcrypt  from 'bcrypt';
 import  jwt  from 'jsonwebtoken';
 import { sendOTP } from '../services/otp.service';  // Import OTP service
 import rateLimit from 'express-rate-limit';
+import { validate } from 'class-validator';
+import { RegisterInput } from '../dto/register.dto'
+import { plainToClass } from 'class-transformer';
 
 // Basic Register
 // export const UserRegistration:any = async(req:Request,res:Response)=>{
@@ -48,6 +51,23 @@ export const sendOtp:any = async(req:Request,res:Response)=>{
 export const UserRegistration:any = async(req:Request,res:Response)=>{
 try {
     const {name, email,password,otpCode} = req.body;
+    const RegisterInputs = plainToClass(RegisterInput, req.body);
+    const validationErrors = await validate(RegisterInputs, {
+        validationError: { target: false }, // Do not include the validated object in the error output
+        skipMissingProperties: false // Ensure all validation rules are checked
+    });
+    
+    if (validationErrors.length > 0) {
+        // Map validation errors to a cleaner format
+        const errors = validationErrors.map(err => {
+            return {
+                property: err.property,
+                constraints: err.constraints // Detailed error messages
+            };
+        });
+        return res.status(400).json({ errors });
+    }
+
     // Check if the email is already registered
     const userExists:any = await SendOtp.findOne({ email });
     if (!userExists) {
@@ -100,6 +120,9 @@ export const UserLogin:any =  async(req:Request,res:Response)=>{
             }
             else {
                 const token = jwt.sign({ _id: validateEmail._id, email: validateEmail.email},'secretkey',{ expiresIn: '1d' });
+                validateEmail.token = token;
+                await validateEmail.save();
+
                 return res.status(200).json({message:'User Login Success',token})  
                 // const signature:any = req.get('Authorization');
                 // if(!signature) {
